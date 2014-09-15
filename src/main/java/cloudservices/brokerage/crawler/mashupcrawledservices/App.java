@@ -23,11 +23,20 @@ public class App {
 
     private final static Logger LOGGER = Logger.getLogger(App.class.getName());
     private final static String TOKEN = ";;;";
+    private static int updatedNum = 0;
+    private static int savedNum = 0;
+    private static int wsdlFoundNum = 0;
 
     public static void main(String[] args) {
         createLogFile();
 //        createNewDB();
+
         copyWSDLFromV1();
+        LOGGER.log(Level.INFO, "***AFTER COPY WSDLS FROM V1***");
+        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", wsdlFoundNum);
+        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", updatedNum);
+        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", savedNum);
+
     }
 
     private static void createNewDB() {
@@ -77,6 +86,7 @@ public class App {
             for (Object wsdlObj : wsdls) {
                 WSDL wsdl = (WSDL) wsdlObj;
                 RawCrawledService rcs = ConvertWSDLToCrawledService(wsdl);
+                wsdlFoundNum++;
                 LOGGER.log(Level.FINE, "Saving or Updating Raw Crawled Service with URL = {0}", rcs.getUrl());
                 addOrUpdateCrawledService(rcs, crawledServiceDAO);
             }
@@ -120,7 +130,7 @@ public class App {
         }
         rcs.setQuery(query);
         rcs.setSource(source);
-        rcs.setIsUpdated(true);
+        rcs.setUpdated(true);
         return rcs;
     }
 
@@ -130,6 +140,7 @@ public class App {
         if (inDB == null) {
             LOGGER.log(Level.FINE, "There is no raw crawled service in DB, Saving a new one");
             crawledServiceDAO.addCrawledService(rcs);
+            savedNum++;
         } else {
             LOGGER.log(Level.FINE, "Found the same url with ID = {0} in DB, Trying to update", inDB.getId());
 
@@ -147,7 +158,7 @@ public class App {
                         }
                     }
                 }
-                inDB.setIsUpdated(true);
+                inDB.setUpdated(true);
             }
 
             if (inDB.getDescription().compareTo(rcs.getDescription()) != 0) {
@@ -164,7 +175,7 @@ public class App {
                         }
                     }
                 }
-                inDB.setIsUpdated(true);
+                inDB.setUpdated(true);
             }
 
             if (inDB.getSource().compareTo(rcs.getSource()) != 0) {
@@ -181,7 +192,7 @@ public class App {
                         }
                     }
                 }
-                inDB.setIsUpdated(true);
+                inDB.setUpdated(true);
             }
 
             if (inDB.getQuery().compareTo(rcs.getQuery()) != 0) {
@@ -198,10 +209,13 @@ public class App {
                         }
                     }
                 }
-                inDB.setIsUpdated(true);
+                inDB.setUpdated(true);
             }
 
-            crawledServiceDAO.saveOrUpdate(inDB);
+            if (inDB.isUpdated()) {
+                crawledServiceDAO.saveOrUpdate(inDB);
+                updatedNum++;
+            }
         }
     }
 }
