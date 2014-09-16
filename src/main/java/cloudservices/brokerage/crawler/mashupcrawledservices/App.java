@@ -10,6 +10,10 @@ import cloudservices.brokerage.crawler.crawlingcommons.model.entities.WSDL;
 import cloudservices.brokerage.crawler.crawlingcommons.model.entities.v2.RawCrawledService;
 import cloudservices.brokerage.crawler.crawlingcommons.model.enums.v2.RawCrawledServiceColType;
 import cloudservices.brokerage.crawler.crawlingcommons.model.enums.v2.RawCrawledServiceType;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
@@ -23,6 +27,7 @@ public class App {
 
     private final static Logger LOGGER = Logger.getLogger(App.class.getName());
     private final static String TOKEN = ";;;";
+    private final static String sTagDSCSVAddress = "DataSets/STag1.0/Service.csv";
     private static int updatedNum = 0;
     private static int savedNum = 0;
     private static int wsdlFoundNum = 0;
@@ -30,13 +35,22 @@ public class App {
     public static void main(String[] args) {
         createLogFile();
 //        createNewDB();
-
         copyWSDLFromV1();
+
         LOGGER.log(Level.INFO, "***AFTER COPY WSDLS FROM V1***");
         LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", wsdlFoundNum);
         LOGGER.log(Level.INFO, "Number of Services Updated: {0}", updatedNum);
         LOGGER.log(Level.INFO, "Number of Services Saved: {0}", savedNum);
 
+        wsdlFoundNum = 0;
+        updatedNum = 0;
+        savedNum = 0;
+        addSTagDS(sTagDSCSVAddress);
+
+        LOGGER.log(Level.INFO, "***AFTER ADDING STag Repository***");
+        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", wsdlFoundNum);
+        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", updatedNum);
+        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", savedNum);
     }
 
     private static void createNewDB() {
@@ -215,6 +229,71 @@ public class App {
             if (inDB.isUpdated()) {
                 crawledServiceDAO.saveOrUpdate(inDB);
                 updatedNum++;
+            }
+        }
+    }
+
+    private static void addSTagDS(String stTagDSAddress) {
+        LOGGER.log(Level.INFO, "Starting to Add STag Repository...");
+
+        File csvRepo = new File(stTagDSAddress);
+        BufferedReader br = null;
+        String line = "";
+        String cvsSplitBy = "\",\"";
+
+        try {
+
+            br = new BufferedReader(new FileReader(csvRepo));
+            br.readLine();
+            RawCrawledService rcs;
+
+            Configuration v2Configuration = new Configuration();
+            v2Configuration.configure("v2hibernate.cfg.xml");
+            RawCrawledServiceDAO crawledServiceDAO = new RawCrawledServiceDAO();
+            RawCrawledServiceDAO.openSession(v2Configuration);
+
+            while ((line = br.readLine()) != null) {
+                // use comma as separator
+                String[] row = line.split(cvsSplitBy);
+                // at least url is neccessary
+                if (row.length > 3) {
+                    rcs = new RawCrawledService();
+                    wsdlFoundNum++;
+                    rcs.setSource("STag");
+                    // Name in CSV
+                    rcs.setTitle(row[0].replaceAll("\"", ""));
+                    rcs.setUrl(row[3].replaceAll("\"", ""));
+                    if (row.length > 7) {
+                        // Wiki Description in CSV
+                        rcs.setDescription(row[7].replaceAll("\"", ""));
+                        if (row.length > 8) {
+                            // Tags in CSV
+                            String tagsStr = row[8].replaceAll("\"", "");
+                            // Match it to new structure
+                            rcs.setQuery(tagsStr.replaceAll(",", ";;;"));
+                        }
+                    }
+                    rcs.setUpdated(true);
+                    rcs.setType(RawCrawledServiceType.WSDL);
+                    LOGGER.log(Level.FINE, "Saving or Updating Raw Crawled Service with URL = {0}", rcs.getUrl());
+                    addOrUpdateCrawledService(rcs, crawledServiceDAO);
+                }
+            }
+            LOGGER.log(Level.INFO, "Addition from STag Repository Successful");
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.SEVERE, "STag CSV File Not Found", e);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "STag CSV File IO Exception", e);
+        } catch (DAOException ex) {
+            LOGGER.log(Level.SEVERE, "ERROR in Accessing Database", ex);
+        } finally {
+            BaseDAO.closeSession();
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "STag CSV File IO Exception", e);
+                }
             }
         }
     }
