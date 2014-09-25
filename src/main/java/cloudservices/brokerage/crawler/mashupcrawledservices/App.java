@@ -27,7 +27,8 @@ public class App {
 
     private final static Logger LOGGER = Logger.getLogger(App.class.getName());
     private final static String TOKEN = ";;;";
-    private final static String sTagDSCSVAddress = "DataSets/STag1.0/Service.csv";
+    private final static String STAG_DS_CSV_ADDRESS = "DataSets/STag1.0/Service.csv";
+    private final static String WSDREAM_QOS_DS_ADDRESS = "DataSets/WSDream-QoSDataset2/wslist.txt";
     private static int updatedNum = 0;
     private static int savedNum = 0;
     private static int wsdlFoundNum = 0;
@@ -35,22 +36,35 @@ public class App {
     public static void main(String[] args) {
         createLogFile();
 //        createNewDB();
-        copyWSDLFromV1();
 
-        LOGGER.log(Level.INFO, "***AFTER COPY WSDLS FROM V1***");
-        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", wsdlFoundNum);
-        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", updatedNum);
-        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", savedNum);
+//        copyWSDLFromV1();
+//
+//        LOGGER.log(Level.INFO, "***AFTER COPY WSDLS FROM V1***");
+//        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", wsdlFoundNum);
+//        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", updatedNum);
+//        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", savedNum);
+//
+//        wsdlFoundNum = 0;
+//        updatedNum = 0;
+//        savedNum = 0;
+//        addSTagDS(STAG_DS_CSV_ADDRESS);
+//
+//        LOGGER.log(Level.INFO, "***AFTER ADDING STag Repository***");
+//        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", wsdlFoundNum);
+//        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", updatedNum);
+//        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", savedNum);
 
         wsdlFoundNum = 0;
         updatedNum = 0;
         savedNum = 0;
-        addSTagDS(sTagDSCSVAddress);
 
-        LOGGER.log(Level.INFO, "***AFTER ADDING STag Repository***");
+        addWSDreamDS(WSDREAM_QOS_DS_ADDRESS);
+
+        LOGGER.log(Level.INFO, "***AFTER ADDING WS Dream QoS Repository***");
         LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", wsdlFoundNum);
         LOGGER.log(Level.INFO, "Number of Services Updated: {0}", updatedNum);
         LOGGER.log(Level.INFO, "Number of Services Saved: {0}", savedNum);
+
     }
 
     private static void createNewDB() {
@@ -238,7 +252,7 @@ public class App {
 
         File csvRepo = new File(stTagDSAddress);
         BufferedReader br = null;
-        String line = "";
+        String line;
         String cvsSplitBy = "\",\"";
 
         try {
@@ -253,7 +267,6 @@ public class App {
             RawCrawledServiceDAO.openSession(v2Configuration);
 
             while ((line = br.readLine()) != null) {
-                // use comma as separator
                 String[] row = line.split(cvsSplitBy);
                 // at least url is neccessary
                 if (row.length > 3) {
@@ -293,6 +306,57 @@ public class App {
                     br.close();
                 } catch (IOException e) {
                     LOGGER.log(Level.SEVERE, "STag CSV File IO Exception", e);
+                }
+            }
+        }
+    }
+
+    private static void addWSDreamDS(String dsAddress) {
+        LOGGER.log(Level.INFO, "Starting to Add WS Dream QoS Repository...");
+
+        File repository = new File(dsAddress);
+        BufferedReader br = null;
+        String line;
+        String splitBy = ""+(char)9;
+
+        try {
+
+            br = new BufferedReader(new FileReader(repository));
+            RawCrawledService rcs;
+
+            Configuration v2Configuration = new Configuration();
+            v2Configuration.configure("v2hibernate.cfg.xml");
+            RawCrawledServiceDAO crawledServiceDAO = new RawCrawledServiceDAO();
+            RawCrawledServiceDAO.openSession(v2Configuration);
+
+            while ((line = br.readLine()) != null) {
+                String[] row = line.split(splitBy);
+                // at least url is neccessary
+                if (row.length > 1) {
+                    rcs = new RawCrawledService();
+                    wsdlFoundNum++;
+                    rcs.setSource("WSDreamQoS");
+                    rcs.setUrl(row[1]);
+                    rcs.setUpdated(true);
+                    rcs.setType(RawCrawledServiceType.WSDL);
+                    LOGGER.log(Level.FINE, "Saving or Updating Raw Crawled Service with URL = {0}", rcs.getUrl());
+                    addOrUpdateCrawledService(rcs, crawledServiceDAO);
+                }
+            }
+            LOGGER.log(Level.INFO, "Addition from WS Dream QoS Repository Successful");
+        } catch (FileNotFoundException e) {
+            LOGGER.log(Level.SEVERE, "WS Dream QoS File Not Found", e);
+        } catch (IOException e) {
+            LOGGER.log(Level.SEVERE, "WS Dream QoS File IO Exception", e);
+        } catch (DAOException ex) {
+            LOGGER.log(Level.SEVERE, "ERROR in Accessing Database", ex);
+        } finally {
+            BaseDAO.closeSession();
+            if (br != null) {
+                try {
+                    br.close();
+                } catch (IOException e) {
+                    LOGGER.log(Level.SEVERE, "WS Dream QoS File IO Exception", e);
                 }
             }
         }
