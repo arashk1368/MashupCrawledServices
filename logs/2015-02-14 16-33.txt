@@ -1,0 +1,2 @@
+Feb 14, 2015 4:33:17 PM cloudservices.brokerage.crawler.mashupcrawledservices.App createNewDB
+INFO: Database Creation Successful
