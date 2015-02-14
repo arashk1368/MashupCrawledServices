@@ -29,12 +29,19 @@ public class App {
 
     public static void main(String[] args) {
         createLogFile();
-//        createNewDB();
+        createNewDB();
 
 //        RepositoryV1Importer.copyWSDLFromV1();
 //
 //        LOGGER.log(Level.INFO, "***AFTER COPY WSDLS FROM V1***");
-//        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", ServiceFoundNum);
+//        LOGGER.log(Level.INFO, "Number of Services Found: {0}", ServiceFoundNum);
+//        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", ServiceUpdatedNum);
+//        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", ServiceSavedNum);
+
+//        RepositoryV1Importer.copyWADLFromV1();
+//
+//        LOGGER.log(Level.INFO, "***AFTER COPY WADLS FROM V1***");
+//        LOGGER.log(Level.INFO, "Number of Services Found: {0}", ServiceFoundNum);
 //        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", ServiceUpdatedNum);
 //        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", ServiceSavedNum);
 
@@ -45,10 +52,9 @@ public class App {
 //        WSDreamQoSImporter.addWSDreamDS(WSDREAM_QOS_DS_ADDRESS);
 //
 //        LOGGER.log(Level.INFO, "***AFTER ADDING WS Dream QoS Repository***");
-//        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", ServiceFoundNum);
+//        LOGGER.log(Level.INFO, "Number of Services Found: {0}", ServiceFoundNum);
 //        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", ServiceUpdatedNum);
 //        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", ServiceSavedNum);
-
         ////      This has  ... problems!
 //        ServiceFoundNum = 0;
 //        ServiceUpdatedNum = 0;
@@ -56,7 +62,7 @@ public class App {
 //        STagImporter.addSTagDSFromCSV(STAG_DS_CSV_ADDRESS);
 //
 //        LOGGER.log(Level.INFO, "***AFTER ADDING STag Repository***");
-//        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", ServiceFoundNum);
+//        LOGGER.log(Level.INFO, "Number of Services Found: {0}", ServiceFoundNum);
 //        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", ServiceUpdatedNum);
 //        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", ServiceSavedNum);
 //        ServiceFoundNum = 0;
@@ -66,7 +72,7 @@ public class App {
 //        STagImporter.addSTagDS(STAG_DS_CSV_ADDRESS, STAG_DS_ADDRESS);
 //
 //        LOGGER.log(Level.INFO, "***AFTER ADDING STag Repository***");
-//        LOGGER.log(Level.INFO, "Number of WSDLs Found: {0}", ServiceFoundNum);
+//        LOGGER.log(Level.INFO, "Number of Services Found: {0}", ServiceFoundNum);
 //        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", ServiceUpdatedNum);
 //        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", ServiceSavedNum);
     }

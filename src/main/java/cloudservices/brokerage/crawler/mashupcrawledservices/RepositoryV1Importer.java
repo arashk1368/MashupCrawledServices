@@ -42,7 +42,7 @@ public class RepositoryV1Importer {
 
             for (Object wsdlObj : wsdls) {
                 WSDL wsdl = (WSDL) wsdlObj;
-                RawCrawledService rcs = ConvertWSDLToCrawledService(wsdl);
+                RawCrawledService rcs = ConvertWSDLToCrawledService(wsdl,RawCrawledServiceType.WSDL);
                 App.ServiceFoundNum++;
                 LOGGER.log(Level.FINE, "Saving or Updating Raw Crawled Service with URL = {0}", rcs.getUrl());
                 App.addOrUpdateCrawledService(rcs, crawledServiceDAO);
@@ -55,12 +55,44 @@ public class RepositoryV1Importer {
         }
     }
 
-    private static RawCrawledService ConvertWSDLToCrawledService(WSDL wsdl) {
+    public static void copyWADLFromV1() {
+        try {
+            Configuration v1Configuration = new Configuration();
+            v1Configuration.configure("v1hibernate.cfg.xml");
+            Configuration v2Configuration = new Configuration();
+            v2Configuration.configure("v2hibernate.cfg.xml");
+
+            LOGGER.log(Level.INFO, "Starting to Migrate from Version 1 Repository...");
+
+            WSDLDAO wsdlDAO = new WSDLDAO();
+            WSDLDAO.openSession(v1Configuration);
+
+            List wsdls = wsdlDAO.getAll("WSDL");
+
+            RawCrawledServiceDAO crawledServiceDAO = new RawCrawledServiceDAO();
+            RawCrawledServiceDAO.openSession(v2Configuration);
+
+            for (Object wsdlObj : wsdls) {
+                WSDL wsdl = (WSDL) wsdlObj;
+                RawCrawledService rcs = ConvertWSDLToCrawledService(wsdl, RawCrawledServiceType.WADL);
+                App.ServiceFoundNum++;
+                LOGGER.log(Level.FINE, "Saving or Updating Raw Crawled Service with URL = {0}", rcs.getUrl());
+                App.addOrUpdateCrawledService(rcs, crawledServiceDAO);
+            }
+            LOGGER.log(Level.INFO, "Migration from Version 1 Repository Successful");
+        } catch (DAOException ex) {
+            LOGGER.log(Level.SEVERE, "ERROR in reading v1 database", ex);
+        } finally {
+            RawCrawledServiceDAO.closeSession();
+        }
+    }
+
+    private static RawCrawledService ConvertWSDLToCrawledService(WSDL wsdl, RawCrawledServiceType type) {
         LOGGER.log(Level.INFO, "Converting wsdl with Id = {0}", wsdl.getId());
         RawCrawledService rcs = new RawCrawledService();
         rcs.setDescription(wsdl.getDescription());
         rcs.setTitle(wsdl.getTitle());
-        rcs.setType(RawCrawledServiceType.WSDL);
+        rcs.setType(type);
         rcs.setUrl(wsdl.getUrl());
         String query = wsdl.getQuery();
         String source = "Google Crawler";
