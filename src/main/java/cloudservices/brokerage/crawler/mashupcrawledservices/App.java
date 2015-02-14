@@ -29,7 +29,7 @@ public class App {
 
     public static void main(String[] args) {
         createLogFile();
-        createNewDB();
+//        createNewDB();
 
 //        RepositoryV1Importer.copyWSDLFromV1();
 //
@@ -37,14 +37,27 @@ public class App {
 //        LOGGER.log(Level.INFO, "Number of Services Found: {0}", ServiceFoundNum);
 //        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", ServiceUpdatedNum);
 //        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", ServiceSavedNum);
-
+//
+//        ServiceFoundNum = 0;
+//        ServiceUpdatedNum = 0;
+//        ServiceSavedNum = 0;
 //        RepositoryV1Importer.copyWADLFromV1();
 //
 //        LOGGER.log(Level.INFO, "***AFTER COPY WADLS FROM V1***");
 //        LOGGER.log(Level.INFO, "Number of Services Found: {0}", ServiceFoundNum);
 //        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", ServiceUpdatedNum);
 //        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", ServiceSavedNum);
+        
+        ServiceFoundNum = 0;
+        ServiceUpdatedNum = 0;
+        ServiceSavedNum = 0;
+        RestImporter.copyRESTFromTest();
 
+        LOGGER.log(Level.INFO, "***AFTER COPY RESTS FROM Test***");
+        LOGGER.log(Level.INFO, "Number of Services Found: {0}", ServiceFoundNum);
+        LOGGER.log(Level.INFO, "Number of Services Updated: {0}", ServiceUpdatedNum);
+        LOGGER.log(Level.INFO, "Number of Services Saved: {0}", ServiceSavedNum);
+        
 //        ServiceFoundNum = 0;
 //        ServiceUpdatedNum = 0;
 //        ServiceSavedNum = 0;
