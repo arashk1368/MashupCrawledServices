@@ -34,7 +34,7 @@ import org.xml.sax.SAXException;
  * @author Arash Khodadadi <http://www.arashkhodadadi.com/>
  */
 public class STagImporter {
-
+    
     private final static Logger LOGGER = Logger.getLogger(STagImporter.class.getName());
 
     public static void addSTagDS(String sTagCSVAddress, String sTagAddress) {
@@ -170,7 +170,7 @@ public class STagImporter {
         }
     }
 
-    private static String getURLFromWSDLComments(String comments) {
+    public static String getURLFromWSDLComments(String comments) {
         String url = "";
         if (comments.isEmpty()) {
             LOGGER.log(Level.FINER, "Comments are empty");
@@ -197,7 +197,7 @@ public class STagImporter {
         return url;
     }
 
-    private static String getSeekdaComments(Node node) {
+    public static String getSeekdaComments(Node node) {
         NodeList nl = node.getChildNodes();
         for (int i = 0; i < nl.getLength(); i++) {
             if (nl.item(i).getNodeType() == Element.COMMENT_NODE) {
